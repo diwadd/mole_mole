@@ -3,6 +3,7 @@ import numpy as np
 
 from molecule import Molecule
 from scalar_coupling_constant_data_point import ScalarCouplingConstantDataPoint
+from atom import BoundAtom
 
 from custom_logging import dprint
 from custom_logging import eprint
@@ -11,19 +12,6 @@ from custom_logging import wprint
 
 import constants
 
-
-def convert_atom_symbol_label_to_atomic_number(atom_symbol):
-
-    s_to_an = [["H", 1],
-               ["C", 6],
-               ["N", 7],
-               ["O", 8]]
-
-    for s in s_to_an:
-        if atom_symbol == s[0]:
-            return s[1]
-
-    return None
 
 
 def read_xyz(file_name):
@@ -35,23 +23,28 @@ def read_xyz(file_name):
         n_atoms = int(lines[0])
         dprint(f"n_atoms: {n_atoms}")
 
-        atomic_numbers = [0 for i in range(n_atoms)]
-        xyz = np.zeros((n_atoms, 3))
+        atoms_xyz = [None for i in range(n_atoms)]
+        # xyz = np.zeros((n_atoms, 3))
 
+        atom_index = 0
         for i in range(2, len(lines)):
             dprint(f"{lines[i].split()}")
 
             l = lines[i].split()
 
-            an = convert_atom_symbol_label_to_atomic_number(l[0])
+
             x = float(l[1])
             y = float(l[2])
             z = float(l[3])
 
-            atomic_numbers[i-2] = an
-            xyz[i-2, :] = np.array([x, y, z])
+            # atoms[i-2] = a
+            # xyz[i-2, :] = np.array([x, y, z])
+            xyz = np.array([x, y, z])
 
-    return atomic_numbers, xyz
+            a = BoundAtom(atom_index, l[0], xyz)
+            atoms_xyz[i-2] = a
+            atom_index += 1
+    return atoms_xyz
 
 
 def read_data(file_name, reading_mode="short"):
@@ -62,7 +55,7 @@ def read_data(file_name, reading_mode="short"):
         lines = f.readlines()
 
         if reading_mode == "short":
-            n = 10
+            n = 200
         else:
             n = len(lines)
 
@@ -74,7 +67,7 @@ def read_data(file_name, reading_mode="short"):
             if i % 10000 == 0:
                 iprint(f"We are at {i}/{n} {100*i/n:.2f} {lines[i]}")
             l = lines[i].split(",")
-            dprint(l)
+            # iprint(l)
 
             id = int(l[0])
             molecule_name = l[1]
@@ -89,9 +82,9 @@ def read_data(file_name, reading_mode="short"):
                 scalar_coupling_constant = None
 
             xyz_file_name = f"{constants.STRUCTURE_XYZ_FILES_PATH}{molecule_name}.xyz"
-            atomic_numbers, xyz = read_xyz(xyz_file_name)
+            atoms_xyz = read_xyz(xyz_file_name)
 
-            m = Molecule(molecule_name, atomic_numbers, xyz)
+            m = Molecule(molecule_name, atoms_xyz)
 
             if molecule_name not in molecules:
                 molecules[molecule_name] = m
@@ -103,12 +96,19 @@ def read_data(file_name, reading_mode="short"):
                                                  coupling_type,
                                                  scalar_coupling_constant)
             data[i-1] = dp
-            print(dp)
+            # print(dp)
 
         return data
 
 
-data = read_data(constants.TRAIN_CVS_FILE_NAME)
+data = read_data(constants.TRAIN_CVS_FILE_NAME, reading_mode="short")
+
+
+for k, v in ScalarCouplingConstantDataPoint.molecules.items():
+
+    print(f"\n --- Molecule {k} ---")
+    print(v)
+    v.print_molecular_graph()
 
 #example_xyz_file = "../champs-scalar-coupling/structures/dsgdb9nsd_133861.xyz"
 #atomic_numbers, xyz = read_xyz(example_xyz_file)
