@@ -1,9 +1,11 @@
 import glob
+import time
 import numpy as np
 
 from molecule import Molecule
 from scalar_coupling_constant_data_point import ScalarCouplingConstantDataPoint
 from atom import BoundAtom
+from constants import ReadingMode
 
 from custom_logging import dprint
 from custom_logging import eprint
@@ -47,21 +49,26 @@ def read_xyz(file_name):
     return atoms_xyz
 
 
-def read_data(file_name, reading_mode="short"):
+
+def read_data(file_name, reading_mode=ReadingMode.SHORT):
 
 
     iprint("Reading data")
     with open(file_name) as f:
         lines = f.readlines()
 
-        if reading_mode == "short":
+        if reading_mode == ReadingMode.SHORT:
             n = 200
         else:
             n = len(lines)
 
-        data = [None for i in range(n)]
+
+        data = [ScalarCouplingConstantDataPoint() for i in range(n)]
+
+        current_molecule = None
         molecules = {}
         ScalarCouplingConstantDataPoint.molecules = molecules
+
         for i in range(1, n):
 
             if i % 10000 == 0:
@@ -81,13 +88,20 @@ def read_data(file_name, reading_mode="short"):
             else:
                 scalar_coupling_constant = None
 
-            xyz_file_name = f"{constants.STRUCTURE_XYZ_FILES_PATH}{molecule_name}.xyz"
-            atoms_xyz = read_xyz(xyz_file_name)
-
-            m = Molecule(molecule_name, atoms_xyz)
-
             if molecule_name not in molecules:
+                #t1 = time.time()
+                xyz_file_name = f"{constants.STRUCTURE_XYZ_FILES_PATH}{molecule_name}.xyz"
+                atoms_xyz = read_xyz(xyz_file_name)
+
+                #t2 = time.time()
+                #print(f"time to read xyz {t2-t1}")
+
+                #t1 = time.time()
+                m = Molecule(molecule_name, atoms_xyz)
+
                 molecules[molecule_name] = m
+                #t2 = time.time()
+                #print(f"time to create molecule {t2-t1}")
 
             dp = ScalarCouplingConstantDataPoint(id,
                                                  molecule_name,
@@ -101,14 +115,14 @@ def read_data(file_name, reading_mode="short"):
         return data
 
 
-data = read_data(constants.TRAIN_CVS_FILE_NAME, reading_mode="short")
+data = read_data(constants.TRAIN_CVS_FILE_NAME, reading_mode=ReadingMode.LONG)
 
 
-for k, v in ScalarCouplingConstantDataPoint.molecules.items():
-
-    print(f"\n --- Molecule {k} ---")
-    print(v)
-    v.print_molecular_graph()
+# for k, v in ScalarCouplingConstantDataPoint.molecules.items():
+#
+#     print(f"\n --- Molecule {k} ---")
+#     print(v)
+#     v.print_molecular_graph()
 
 #example_xyz_file = "../champs-scalar-coupling/structures/dsgdb9nsd_133861.xyz"
 #atomic_numbers, xyz = read_xyz(example_xyz_file)

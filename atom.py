@@ -41,17 +41,29 @@ class Atom:
                   "O": 6,
                   "F": 7}
 
+        # s_to_v = [0,
+        #           1,   # 1 H
+        #           0,
+        #           0,
+        #           0,
+        #           0,
+        #           4,  # 6 C
+        #           5,  # 7 N
+        #           6,  # 8 O
+        #           9]  # 9 F
+
         return self._return_from_dict(s_to_v, WrongAtomSymbol, symbol)
+        #return s_to_v[self.z]
 
     def _get_cr(self, symbol):
 
-        h_tol = 1.130
-        c_tol = 1.125
-        n_tol = 1.125
-        o_tol = 1.125
-        f_tol = 1.125
+        h_tol = 1.135  # Hydrogen covalent radii tolerance
+        c_tol = 1.135
+        n_tol = 1.135
+        o_tol = 1.135
+        f_tol = 1.135
 
-        h_cr = 0.31
+        h_cr = 0.31  # Hydrogen covalent radii
         c_cr = 0.76
         n_cr = 0.71
         o_cr = 0.66

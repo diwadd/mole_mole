@@ -1,4 +1,7 @@
+import time
+
 import numpy as np
+
 
 from custom_logging import dprint
 from custom_logging import eprint
@@ -21,7 +24,13 @@ class Molecule:
         self.molecule_graph = [[] for i in range(self.n_atoms)]
 
         self._create_molecule_graph()
-        self.print_molecular_graph()
+        # self.print_molecular_graph()
+
+    # def __hash__(self):
+    #     return hash(self.molecule_name)
+    #
+    # def __eq__(self, other):
+    #     return self.molecule_name == other.molecule_name
 
     def __str__(self):
         s = f"molecule name: {self.molecule_name}\n"
@@ -32,13 +41,15 @@ class Molecule:
         return s
 
     def print_molecular_graph(self):
-        print(f" --- Molecular graph for {self.molecule_name} ---")
+        iprint(f" --- Molecular graph for {self.molecule_name} ---")
         for i in range(self.n_atoms):
-            print(f"Bonds for atom: {self.atoms[i]}")
+            iprint(f"Bonds for atom: {self.atoms[i]}")
             for j in range(len(self.molecule_graph[i])):
-                print(f"--> {self.molecule_graph[i][j]}")
+                iprint(f"--> {self.molecule_graph[i][j]}")
+
 
     def _create_molecule_graph(self):
+        #t1 = time.time()
         dprint(f" --- Creating molecule graph for {self.molecule_name} ---")
 
         for i in range(self.n_atoms):
@@ -53,20 +64,20 @@ class Molecule:
                 dprint(f"j={j} Neighbour atom: {b} a.cr+b.cr={a.cr + b.cr} r = {r}")
 
                 max_bond = a.cr + b.cr
-                if r < max_bond:
+                if r <= max_bond:
 
                     a_index = a.id
                     if len(self.molecule_graph[a_index]) < a.v:
-                        dprint("Adding edge")
-                        self.molecule_graph[a_index].append(b)
+                        self.molecule_graph[a_index].append(b.id)
 
                     b_index = b.id
                     if len(self.molecule_graph[b_index]) < b.v:
-                        self.molecule_graph[b_index].append(a)
+                        self.molecule_graph[b_index].append(a.id)
 
         for i in range(self.n_atoms):
             if len(self.molecule_graph[i]) == 0:
                 raise NoBondsForAtoms(self.atoms[i])
         dprint(" --- Molecule graph ready ---")
 
-        return None
+        #t2 = time.time()
+        #print(f"time: {t2-t1}")
