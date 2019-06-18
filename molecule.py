@@ -12,6 +12,8 @@ from custom_exception import NoBondsForAtoms
 
 
 class Molecule:
+    molecules = {}
+
     def __init__(self,
                  molecule_name=None,
                  atoms_xyz=None):
@@ -23,7 +25,8 @@ class Molecule:
         self.sorted_atoms = sorted(self.atoms, key=lambda x: x.z, reverse=True)
         self.molecule_graph = [[] for i in range(self.n_atoms)]
 
-        self._create_molecule_graph()
+        self._make_molecule_graph()
+
         # self.print_molecular_graph()
 
     # def __hash__(self):
@@ -48,7 +51,7 @@ class Molecule:
                 iprint(f"--> {self.molecule_graph[i][j]}")
 
 
-    def _create_molecule_graph(self):
+    def _make_molecule_graph(self):
         #t1 = time.time()
         dprint(f" --- Creating molecule graph for {self.molecule_name} ---")
 
@@ -66,13 +69,13 @@ class Molecule:
                 max_bond = a.cr + b.cr
                 if r <= max_bond:
 
-                    a_index = a.id
+                    a_index = a.local_id
                     if len(self.molecule_graph[a_index]) < a.v:
-                        self.molecule_graph[a_index].append(b.id)
+                        self.molecule_graph[a_index].append(b.local_id)
 
-                    b_index = b.id
+                    b_index = b.local_id
                     if len(self.molecule_graph[b_index]) < b.v:
-                        self.molecule_graph[b_index].append(a.id)
+                        self.molecule_graph[b_index].append(a.local_id)
 
         for i in range(self.n_atoms):
             if len(self.molecule_graph[i]) == 0:
@@ -81,3 +84,48 @@ class Molecule:
 
         #t2 = time.time()
         #print(f"time: {t2-t1}")
+
+    def return_edges(self):
+
+        edge_set = set()
+
+        for i in range(self.n_atoms):
+            n_edges = len(self.molecule_graph[i])
+            for j in range(n_edges):
+                e = (i, self.molecule_graph[i][j])  # graph edge
+                e = sorted(e)  # assume undirected graph, this will return a list
+                e = tuple(e)  # lists cannot be added into sets so turn it into tuple
+                edge_set.add(e)
+
+        return list(edge_set)
+
+    @classmethod
+    def assign_global_id_and_molecule_id_to_atoms(cls):
+
+        a_index = 0
+        m_index = 0
+        for _, molecule in sorted(cls.molecules.items()):
+            for i in range(len(molecule.atoms)):
+                molecule.atoms[i].global_id = a_index
+                molecule.atoms[i].molecule_id = m_index
+                a_index += 1
+            m_index += 1
+
+
+    @classmethod
+    def print_all_atoms(cls):
+
+        a_index = 0
+        for molecule_name, molecule in sorted(cls.molecules.items()):
+            for i in range(len(molecule.atoms)):
+                print(f"{molecule_name} {molecule.atoms[i]}")
+
+    @classmethod
+    def print_edges_using_global_ids(cls):
+
+        for molecule_name, molecule in sorted(cls.molecules.items()):
+            edges = molecule.return_edges()
+            for i in range(len(edges)):
+                e1 = edges[i][0]
+                e2 = edges[i][1]
+                print(f"{molecule.atoms[e2].global_id} {molecule.atoms[e1].global_id}")

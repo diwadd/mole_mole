@@ -43,7 +43,7 @@ def read_xyz(file_name):
             # xyz[i-2, :] = np.array([x, y, z])
             xyz = np.array([x, y, z])
 
-            a = BoundAtom(atom_index, l[0], xyz)
+            a = BoundAtom(local_id=atom_index, symbol=l[0], xyz=xyz)
             atoms_xyz[i-2] = a
             atom_index += 1
     return atoms_xyz
@@ -58,7 +58,8 @@ def read_data(file_name, reading_mode=ReadingMode.SHORT):
         lines = f.readlines()
 
         if reading_mode == ReadingMode.SHORT:
-            n = 200
+            # n = 5331 + 1  # end of molecule dsgdb9nsd_000294
+            n = 187 + 1
         else:
             n = len(lines)
 
@@ -66,8 +67,8 @@ def read_data(file_name, reading_mode=ReadingMode.SHORT):
         data = [ScalarCouplingConstantDataPoint() for i in range(n)]
 
         current_molecule = None
-        molecules = {}
-        ScalarCouplingConstantDataPoint.molecules = molecules
+        # molecules = {}
+        # Molecule.molecules = molecules
 
         for i in range(1, n):
 
@@ -82,13 +83,15 @@ def read_data(file_name, reading_mode=ReadingMode.SHORT):
             atom_index_two = int(l[3])
             coupling_type = l[4]
 
+            iprint(f"i={i} Processing {id} and {molecule_name}")
+
             max_number_of_columns = 6
             if len(l) == max_number_of_columns:
                 scalar_coupling_constant = l[5]
             else:
                 scalar_coupling_constant = None
 
-            if molecule_name not in molecules:
+            if molecule_name not in Molecule.molecules:
                 #t1 = time.time()
                 xyz_file_name = f"{constants.STRUCTURE_XYZ_FILES_PATH}{molecule_name}.xyz"
                 atoms_xyz = read_xyz(xyz_file_name)
@@ -99,7 +102,7 @@ def read_data(file_name, reading_mode=ReadingMode.SHORT):
                 #t1 = time.time()
                 m = Molecule(molecule_name, atoms_xyz)
 
-                molecules[molecule_name] = m
+                Molecule.molecules[molecule_name] = m
                 #t2 = time.time()
                 #print(f"time to create molecule {t2-t1}")
 
@@ -115,8 +118,15 @@ def read_data(file_name, reading_mode=ReadingMode.SHORT):
         return data
 
 
-data = read_data(constants.TRAIN_CVS_FILE_NAME, reading_mode=ReadingMode.LONG)
+data = read_data(constants.TRAIN_CVS_FILE_NAME, reading_mode=ReadingMode.SHORT)
 
+iprint(f"Number of molecules: {len(Molecule.molecules)}")
+
+iprint(Molecule.molecules["dsgdb9nsd_000002"].return_edges())
+
+Molecule.assign_global_id_and_molecule_id_to_atoms()
+Molecule.print_all_atoms()
+Molecule.print_edges_using_global_ids()
 
 # for k, v in ScalarCouplingConstantDataPoint.molecules.items():
 #

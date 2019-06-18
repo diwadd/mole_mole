@@ -1,7 +1,7 @@
 struct BoundAtom
-    id::Int32
+    id::UInt32
     symbol::String
-    z_an::Int32 # atomic number
+    z_an::UInt32 # atomic number
     v::Int32
     cr::Float32
     xyz::Array{Float32}

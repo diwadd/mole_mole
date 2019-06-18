@@ -118,5 +118,22 @@ function read_data(file_name::String,
     end
 end
 
+
+function get_total_number_of_edges(molecules::Dict{String, Molecule})
+
+    total_number_of_edges = 0
+    for (key, value) in molecules
+        total_number_of_edges = total_number_of_edges + get_number_of_edges(value.molecule_graph)
+    end
+
+    return total_number_of_edges
+end
+
+
 data, molecules = read_data(TRAIN_CVS_FILE_NAME)
+total_number_of_edges = get_total_number_of_edges(molecules)
+
+println("Total number of edges: $total_number_of_edges")
+
+
 #read_xyz(STRUCTURE_XYZ_FILES_PATH * "dsgdb9nsd_109615.xyz")

@@ -24,7 +24,8 @@ function make_molecule_graphy(atoms::Array{BoundAtom})
     # print_atoms(sorted_atoms)
 
     n = length(sorted_atoms)
-    molecule_graph = a=Array{Array{UInt32,1},1}([[] for i=1:n])
+    # molecule_graph = Array{Array{UInt32,1},1}([[] for i=1:n])
+    molecule_graph = Array{Array{UInt32,1},1}([Array{UInt32,1}(undef,0) for i=1:n])
 
     for i = 1:n
         a = sorted_atoms[i]
@@ -36,13 +37,14 @@ function make_molecule_graphy(atoms::Array{BoundAtom})
 
             if r <= max_bond
 
-                if length(molecule_graph[a.id]) < a.v
+                if length(molecule_graph[a.id]) < a.v && length(molecule_graph[b.id]) < b.v
                     push!(molecule_graph[a.id], b.id)
-                end
-
-                if length(molecule_graph[b.id]) < b.v
                     push!(molecule_graph[b.id], a.id)
                 end
+
+                # if length(molecule_graph[b.id]) < b.v
+                #     push!(molecule_graph[b.id], a.id)
+                # end
             end
         end
     end
@@ -60,6 +62,19 @@ function make_molecule_graphy(atoms::Array{BoundAtom})
 
     return is_graph_valid, molecule_graph
 end
+
+
+function get_number_of_edges(molecule_graph::Array{Array{UInt32}})
+
+    n_edges = 0
+    n_nodes = length(molecule_graph)
+    for i = 1:n_nodes
+        n_edges = n_edges + length(molecule_graph[i])
+    end
+
+    return n_edges
+end
+
 
 
 function print_molecular_graph(molecule)

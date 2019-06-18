@@ -1,5 +1,4 @@
 class ScalarCouplingConstantDataPoint:
-    molecules = None
 
     def __init__(self,
                  id=None,

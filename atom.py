@@ -1,8 +1,8 @@
 from custom_exception import WrongAtomSymbol
 
 class Atom:
-    def __init__(self, id, symbol):
-        self.id = id
+    def __init__(self, global_id=None, symbol=None):
+        self.global_id = global_id
         self.symbol = symbol
         self.z = self._convert_symbol_to_z(self.symbol) # atomic number
         self.v = self._get_valence_electrons(self.symbol) # number of valence electrons
@@ -12,10 +12,10 @@ class Atom:
         return self.symbol == other.symbol or self.z == other.z
 
     def __str__(self):
-        return f"{self.id} {self.symbol} z={self.z} v={self.v} c={self.cr}"
+        return f"{self.global_id} {self.symbol} z={self.z} v={self.v} c={self.cr}"
 
     def __repr__(self):
-        return f"{self.id} {self.symbol} z={self.z} v={self.v} c={self.cr}"
+        return f"{self.global_id} {self.symbol} z={self.z} v={self.v} c={self.cr}"
 
     def _return_from_dict(self, d, e, k):
         try:
@@ -79,12 +79,14 @@ class Atom:
 
 
 class BoundAtom(Atom):
-    def __init__(self, id, symbol, xyz):
-        super().__init__(id, symbol)
+    def __init__(self, local_id=None, molecule_id=None, symbol=None, xyz=None):
+        super().__init__(global_id=None, symbol=symbol)
+        self.local_id = local_id
+        self.molecule_id = molecule_id
         self.xyz = xyz
 
     def __str__(self):
-        return f"{self.id} {self.symbol} z={self.z} v={self.v} c={self.cr} xyz={self.xyz}"
+        return f"{self.global_id} {self.local_id} {self.molecule_id} {self.symbol} z={self.z} v={self.v} c={self.cr} xyz={self.xyz}"
 
     def __repr__(self):
-        return f"{self.id} {self.symbol} z={self.z} v={self.v} c={self.cr} xyz={self.xyz}"
+        return f"{self.global_id} {self.local_id} {self.molecule_id} {self.symbol} z={self.z} v={self.v} c={self.cr} xyz={self.xyz}"
