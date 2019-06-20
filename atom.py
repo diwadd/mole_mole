@@ -85,6 +85,18 @@ class BoundAtom(Atom):
         self.molecule_id = molecule_id
         self.xyz = xyz
 
+    def return_property_list(self):
+        return [self.global_id,
+                self.local_id,
+                self.molecule_id,
+                self.z,
+                self.v,
+                self.cr,
+                self.xyz[0],
+                self.xyz[1],
+                self.xyz[2]]
+
+
     def __str__(self):
         return f"{self.global_id} {self.local_id} {self.molecule_id} {self.symbol} z={self.z} v={self.v} c={self.cr} xyz={self.xyz}"
 

@@ -13,6 +13,12 @@ from custom_exception import NoBondsForAtoms
 
 class Molecule:
     molecules = {}
+    are_ids_assigned = False
+    propetry_matrix = []
+    adjacency_matrix = []
+    indicator_matrix = []
+    graph_node_labels_column_names = []
+    graph_node_labels_matrix = []
 
     def __init__(self,
                  molecule_name=None,
@@ -87,17 +93,18 @@ class Molecule:
 
     def return_edges(self):
 
-        edge_set = set()
+        edge_list = []
 
         for i in range(self.n_atoms):
             n_edges = len(self.molecule_graph[i])
             for j in range(n_edges):
                 e = (i, self.molecule_graph[i][j])  # graph edge
-                e = sorted(e)  # assume undirected graph, this will return a list
-                e = tuple(e)  # lists cannot be added into sets so turn it into tuple
-                edge_set.add(e)
+                # e = sorted(e)  # assume undirected graph, this will return a list
+                # e = tuple(e)  # lists cannot be added into sets so turn it into tuple
+                edge_list.append(e)
 
-        return list(edge_set)
+        edge_list = sorted(edge_list, key=lambda x: x[1])
+        return edge_list
 
     @classmethod
     def assign_global_id_and_molecule_id_to_atoms(cls):
@@ -111,6 +118,82 @@ class Molecule:
                 a_index += 1
             m_index += 1
 
+        cls.are_ids_assigned = True
+
+    @classmethod
+    def build_molecule_property_matrix(cls):
+
+        assert cls.are_ids_assigned
+
+        cls.propetry_matrix = []
+        for _, molecule in sorted(cls.molecules.items()):
+            for i in range(len(molecule.atoms)):
+                property_list = molecule.atoms[i].return_property_list()
+                cls.propetry_matrix.append(property_list)
+
+        cls.propetry_matrix = np.array(cls.propetry_matrix)
+
+    @classmethod
+    def build_adjacency_matrix_using_global_ids(cls):
+
+        assert cls.are_ids_assigned
+
+        cls.adjacency_matrix = []
+        for molecule_name, molecule in sorted(cls.molecules.items()):
+            edges = molecule.return_edges()
+            for i in range(len(edges)):
+                e1 = edges[i][0]
+                e2 = edges[i][1]
+
+                a2 = molecule.atoms[e2].global_id
+                a1 = molecule.atoms[e1].global_id
+                cls.adjacency_matrix.append([a1, a2])
+        cls.adjacency_matrix = np.array(cls.adjacency_matrix)
+
+    @classmethod
+    def build_indicator_matrix(cls):
+
+        assert cls.are_ids_assigned
+
+        for molecule_name, molecule in sorted(cls.molecules.items()):
+            for i in range(len(molecule.atoms)):
+                global_id = molecule.atoms[i].global_id
+                molecule_id = molecule.atoms[i].molecule_id
+                cls.indicator_matrix.append(molecule_id)
+
+        cls.indicator_matrix = np.array(cls.indicator_matrix)
+
+
+    @classmethod
+    def build_atom_features_matrix(cls):
+
+        assert cls.are_ids_assigned
+
+        cls.graph_node_labels_column_names = [#  "global_id",
+                                              #  "molecule_id",
+                                              "atomic_number_z",
+                                              "n_val_electrons",
+                                              "covalent_radii",
+                                              "x",
+                                              "y",
+                                              "z"]
+
+
+        for molecule_name, molecule in sorted(cls.molecules.items()):
+            for i in range(len(molecule.atoms)):
+                global_id = molecule.atoms[i].global_id
+                molecule_id = molecule.atoms[i].molecule_id
+                z = molecule.atoms[i].z
+                v = molecule.atoms[i].v
+                cr = molecule.atoms[i].cr
+                ix = molecule.atoms[i].xyz[0]
+                iy = molecule.atoms[i].xyz[1]
+                iz = molecule.atoms[i].xyz[2]
+                # cls.graph_node_labels_matrix.append([global_id, molecule_id, z, v, cr, ix, iy, iz])
+                cls.graph_node_labels_matrix.append([z, v, cr, ix, iy, iz])
+
+        cls.graph_node_labels_matrix = np.array(cls.graph_node_labels_matrix)
+
 
     @classmethod
     def print_all_atoms(cls):
@@ -121,11 +204,31 @@ class Molecule:
                 print(f"{molecule_name} {molecule.atoms[i]}")
 
     @classmethod
-    def print_edges_using_global_ids(cls):
+    def print_adjacency_matrix_using_global_ids(cls):
 
-        for molecule_name, molecule in sorted(cls.molecules.items()):
-            edges = molecule.return_edges()
-            for i in range(len(edges)):
-                e1 = edges[i][0]
-                e2 = edges[i][1]
-                print(f"{molecule.atoms[e2].global_id} {molecule.atoms[e1].global_id}")
+        n, m = cls.adjacency_matrix.shape
+        for i in range(n):
+            print(f"{cls.adjacency_matrix[i]}")
+
+    @classmethod
+    def print_indicator_matrix(cls):
+
+        n = len(cls.indicator_matrix)
+        for i in range(n):
+            print(f"i={i} {cls.indicator_matrix[i]}")
+
+    @classmethod
+    def print_property_matrix(cls):
+
+        n, m = cls.propetry_matrix.shape
+        for i in range(n):
+            print(cls.propetry_matrix[i])
+
+    @classmethod
+    def print_graph_node_labels_matrix(cls):
+
+        n, m = cls.graph_node_labels_matrix.shape
+        for i in range(n):
+            s = [str(cls.graph_node_labels_matrix[i][j]) for j in range(m)]
+            s = " ".join(s)
+            print(s)
