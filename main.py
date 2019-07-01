@@ -3,6 +3,7 @@ import time
 import numpy as np
 import pandas as pd
 
+import gnet
 from molecule import Molecule
 from scalar_coupling_constant_data_point import ScalarCouplingConstantDataPoint
 from atom import BoundAtom
@@ -137,12 +138,12 @@ def build_train_data(adjacency_matrix,
 
 
     adjacency_df = pd.DataFrame(adjacency_matrix, columns=["edge_id_1", "edge_id_2"])
-
-    _, m = graph_node_labels_matrix.shape
-    node_labels = ["node_labels_" + str(i) for i in range(m)]
     graph_node_labels_df = pd.DataFrame(graph_node_labels_matrix, columns=graph_node_labels_column_names)
 
     indicator_df = pd.DataFrame(indicator_matrix, columns=["indicator"])
+
+    print("indicator_df.head()")
+    print(indicator_df.head(1000))
 
     suffixes = ("_e1", "_e2")
     adjacency_df = pd.merge(adjacency_df, graph_node_labels_df, left_on="edge_id_1", right_index=True, how='left', suffixes=suffixes)
@@ -181,31 +182,31 @@ def build_train_data(adjacency_matrix,
 
     print_one_zero_matrix(node_graph_batch)
 
+    graph_index_min = indicator_df.min()[0]
+    graph_index_max = indicator_df.max()[0] + 1
+
+    print(f"graph_index_min: {graph_index_min}")
+    print(f"graph_index_max: {graph_index_max}")
+
+
+    number_of_nodes_in_graphs_df = indicator_df.loc[(indicator_df["indicator"] >= graph_index_min) & (indicator_df["indicator"] < graph_index_max)]
+    number_of_nodes_in_graphs_df = number_of_nodes_in_graphs_df.groupby(["indicator"]).size()
+    number_of_nodes_in_graphs = number_of_nodes_in_graphs_df.values
+
+    print("number_of_nodes_in_graphs.head()")
+    print(number_of_nodes_in_graphs_df.head(1000))
 
     print("data_batch")
     print(data_batch)
 
-
-    # dresult = pd.merge(dresult, dlab, left_on="id_1", right_index=True, how='left')
-    # print("two dresult.head()")
-    # print(dresult)
-    #
-    #
-    # dresult = pd.merge(dresult, dlab, left_on="id_2", right_index=True, how='left')
-    # print("three dresult.head()")
-    # print(dresult)
-    #
-    #
-    # # dresult=pd.concat([dresult, darch], axis=1)
-    # dresult = pd.merge(dresult, dgr, left_on="id_1", right_index=True, how='left')
-
+    print(f"data_batch.shape: {data_batch.shape}")
     print(f"adjacency_matrix.shape: {adjacency_matrix.shape}")
     print(f"graph_node_labels_matrix: {graph_node_labels_matrix.shape}")
     print(f"indicator_matrix: {indicator_matrix.shape}")
     print(f"edge_batch.shape: {edge_batch.shape}")
     print(f"node_graph_batch.shape: {node_graph_batch.shape}")
 
-    return None
+    return data_batch, edge_batch, node_graph_batch, number_of_nodes_in_graphs
 
 
 data = read_data(constants.TRAIN_CVS_FILE_NAME, reading_mode=ReadingMode.SHORT)
@@ -232,7 +233,20 @@ indicator_matrix = Molecule.indicator_matrix
 graph_node_labels_matrix = Molecule.graph_node_labels_matrix
 graph_node_labels_column_names = Molecule.graph_node_labels_column_names
 
-build_train_data(adjacency_matrix, graph_node_labels_matrix, indicator_matrix, graph_node_labels_column_names)
+data_batch, edge_batch, node_graph_batch, number_of_nodes_in_graphs = build_train_data(adjacency_matrix,
+                                                                                       graph_node_labels_matrix,
+                                                                                       indicator_matrix,
+                                                                                       graph_node_labels_column_names)
+
+
+print("node_graph_batch")
+print_one_zero_matrix(node_graph_batch)
+
+input_dim = 13
+output_dim = 1
+state_dim = 5
+
+gn = gnet.GNet(input_dim, state_dim, output_dim)
 
 # for k, v in ScalarCouplingConstantDataPoint.molecules.items():
 #
