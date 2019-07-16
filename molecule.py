@@ -33,13 +33,6 @@ class Molecule:
 
         self._make_molecule_graph()
 
-        # self.print_molecular_graph()
-
-    # def __hash__(self):
-    #     return hash(self.molecule_name)
-    #
-    # def __eq__(self, other):
-    #     return self.molecule_name == other.molecule_name
 
     def __str__(self):
         s = f"molecule name: {self.molecule_name}\n"
@@ -232,3 +225,5 @@ class Molecule:
             s = [str(cls.graph_node_labels_matrix[i][j]) for j in range(m)]
             s = " ".join(s)
             print(s)
+
+

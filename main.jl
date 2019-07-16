@@ -121,19 +121,26 @@ end
 
 function get_total_number_of_edges(molecules::Dict{String, Molecule})
 
+    max_number_of_edges = -Inf
     total_number_of_edges = 0
     for (key, value) in molecules
-        total_number_of_edges = total_number_of_edges + get_number_of_edges(value.molecule_graph)
+
+        m = get_number_of_edges(value.molecule_graph)
+        if m > max_number_of_edges
+            max_number_of_edges = m
+        end
+        total_number_of_edges = total_number_of_edges + m
     end
 
-    return total_number_of_edges
+    return total_number_of_edges, max_number_of_edges
 end
 
 
 data, molecules = read_data(TRAIN_CVS_FILE_NAME)
-total_number_of_edges = get_total_number_of_edges(molecules)
+total_number_of_edges, max_number_of_edges = get_total_number_of_edges(molecules)
 
 println("Total number of edges: $total_number_of_edges")
+println("Max number of edges: $max_number_of_edges")
 
 
 #read_xyz(STRUCTURE_XYZ_FILES_PATH * "dsgdb9nsd_109615.xyz")

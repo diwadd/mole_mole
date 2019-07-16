@@ -3,7 +3,7 @@ import time
 import numpy as np
 import pandas as pd
 
-import gnet
+# import gnet
 from molecule import Molecule
 from scalar_coupling_constant_data_point import ScalarCouplingConstantDataPoint
 from atom import BoundAtom
@@ -76,7 +76,7 @@ def read_data(file_name, reading_mode=ReadingMode.SHORT):
             n = len(lines)
 
 
-        data = [ScalarCouplingConstantDataPoint() for i in range(n)]
+        data = [ScalarCouplingConstantDataPoint() for i in range(n - 1)]
 
         current_molecule = None
         # molecules = {}
@@ -128,6 +128,7 @@ def read_data(file_name, reading_mode=ReadingMode.SHORT):
             # print(dp)
 
         return data
+
 
 
 def build_train_data(adjacency_matrix,
@@ -215,44 +216,48 @@ iprint(f"Number of molecules: {len(Molecule.molecules)}")
 
 iprint(Molecule.molecules["dsgdb9nsd_000002"].return_edges())
 
-Molecule.assign_global_id_and_molecule_id_to_atoms()
-Molecule.build_molecule_property_matrix()
-Molecule.build_adjacency_matrix_using_global_ids()
-Molecule.build_indicator_matrix()
-Molecule.build_atom_features_matrix()
 
+print("Molecule graph for data[0]")
+data[0].get_molecule().print_molecular_graph()
 
-Molecule.print_all_atoms()
-Molecule.print_adjacency_matrix_using_global_ids()
-Molecule.print_property_matrix()
-Molecule.print_indicator_matrix()
-Molecule.print_graph_node_labels_matrix()
+data[0].prepare_data_point()
+# data[1].prepare_data_point()
 
-adjacency_matrix = Molecule.adjacency_matrix
-indicator_matrix = Molecule.indicator_matrix
-graph_node_labels_matrix = Molecule.graph_node_labels_matrix
-graph_node_labels_column_names = Molecule.graph_node_labels_column_names
+# n = len(data)
+# print(f"data has {n} points")
+# for i in range(n):
+#     print(f"data[{i}] is")
+#     print(data[i])
 
-data_batch, edge_batch, node_graph_batch, number_of_nodes_in_graphs = build_train_data(adjacency_matrix,
-                                                                                       graph_node_labels_matrix,
-                                                                                       indicator_matrix,
-                                                                                       graph_node_labels_column_names)
-
-
-print("node_graph_batch")
-print_one_zero_matrix(node_graph_batch)
-
-input_dim = 13
-output_dim = 1
-state_dim = 5
-
-gn = gnet.GNet(input_dim, state_dim, output_dim)
-
-# for k, v in ScalarCouplingConstantDataPoint.molecules.items():
+# Molecule.assign_global_id_and_molecule_id_to_atoms()
+# Molecule.build_molecule_property_matrix()
+# Molecule.build_adjacency_matrix_using_global_ids()
+# Molecule.build_indicator_matrix()
+# Molecule.build_atom_features_matrix()
 #
-#     print(f"\n --- Molecule {k} ---")
-#     print(v)
-#     v.print_molecular_graph()
-
-#example_xyz_file = "../champs-scalar-coupling/structures/dsgdb9nsd_133861.xyz"
-#atomic_numbers, xyz = read_xyz(example_xyz_file)
+#
+# Molecule.print_all_atoms()
+# Molecule.print_adjacency_matrix_using_global_ids()
+# Molecule.print_property_matrix()
+# Molecule.print_indicator_matrix()
+# Molecule.print_graph_node_labels_matrix()
+#
+# adjacency_matrix = Molecule.adjacency_matrix
+# indicator_matrix = Molecule.indicator_matrix
+# graph_node_labels_matrix = Molecule.graph_node_labels_matrix
+# graph_node_labels_column_names = Molecule.graph_node_labels_column_names
+#
+# data_batch, edge_batch, node_graph_batch, number_of_nodes_in_graphs = build_train_data(adjacency_matrix,
+#                                                                                        graph_node_labels_matrix,
+#                                                                                        indicator_matrix,
+#                                                                                        graph_node_labels_column_names)
+#
+#
+# print("node_graph_batch")
+# print_one_zero_matrix(node_graph_batch)
+#
+# input_dim = 13
+# output_dim = 1
+# state_dim = 5
+#
+# gn = gnet.GNet(input_dim, state_dim, output_dim)

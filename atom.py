@@ -41,17 +41,6 @@ class Atom:
                   "O": 6,
                   "F": 7}
 
-        # s_to_v = [0,
-        #           1,   # 1 H
-        #           0,
-        #           0,
-        #           0,
-        #           0,
-        #           4,  # 6 C
-        #           5,  # 7 N
-        #           6,  # 8 O
-        #           9]  # 9 F
-
         return self._return_from_dict(s_to_v, WrongAtomSymbol, symbol)
         #return s_to_v[self.z]
 
@@ -84,6 +73,10 @@ class BoundAtom(Atom):
         self.local_id = local_id
         self.molecule_id = molecule_id
         self.xyz = xyz
+        self.x_coor = xyz[0]
+        self.y_coor = xyz[1]
+        self.z_coor = xyz[2]
+
 
     def return_property_list(self):
         return [self.global_id,
